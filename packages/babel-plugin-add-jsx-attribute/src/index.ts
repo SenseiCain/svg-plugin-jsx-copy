@@ -12,6 +12,7 @@ export interface Attribute {
 export interface Options {
   elements: string[]
   attributes: Attribute[]
+  blacklist?: string[]
 }
 
 const positionMethod = {
@@ -62,6 +63,15 @@ const addJSXAttribute = (_: ConfigAPI, opts: Options) => {
   return {
     visitor: {
       JSXOpeningElement(path: NodePath<t.JSXOpeningElement>) {
+        if (opts.blacklist) {
+          // @ts-ignore
+          const filePath = path.hub.file.opts.filename;
+          const fileSplit = filePath.split('/');
+          const svg = fileSplit[fileSplit.length - 1].replace('.svg', '');
+
+          if (opts.blacklist.includes(svg)) return
+        }
+
         if (!t.isJSXIdentifier(path.node.name)) return
         if (!opts.elements.includes(path.node.name.name)) return
 
